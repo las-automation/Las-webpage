@@ -66,20 +66,32 @@
                 <a href="contato.html" class="text-gray-600 hover:text-cyan-500 transition">Contato</a>
             </nav>
 
-            <!-- Botão Mobile -->
-            <button id="mobile-btn" class="md:hidden">
+            <!-- Botão Mobile (CORRIGIDO) -->
+            <button id="mobile-btn" class="md:hidden text-gray-900">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
             </button>
         </div>
-        <!-- Menu Mobile -->
+        <!-- Menu Mobile (ATUALIZADO) -->
         <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
             <a href="index.html" class="block py-2 text-gray-600">Home</a>
             <a href="quem-somos.html" class="block py-2 text-gray-600">Quem somos</a>
-            <a href="clp.html" class="block py-2 text-gray-600">Serviços</a>
+            <div>
+                <button id="mobile-services-toggle" class="w-full flex justify-between items-center py-2 text-gray-600">
+                    <span>Serviços</span>
+                    <svg id="mobile-services-toggle-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="mobile-services-submenu" class="hidden pl-4">
+                    <a href="clp.html" class="block py-2 text-gray-600">CLP's</a>
+                    <a href="scada.html" class="block py-2 text-gray-600">Sistemas SCADAs</a>
+                    <a href="redes.html" class="block py-2 text-gray-600">Certificações de Redes</a>
+                    <a href="spda.html" class="block py-2 text-gray-600">SPDA</a>
+                    <a href="eletrica.html" class="block py-2 text-gray-600">Soluções Elétricas</a>
+                    <a href="repair.html" class="block py-2 text-gray-600">Service-Repair</a>
+                </div>
+            </div>
             <a href="contato.html" class="block py-2 text-gray-600">Contato</a>
         </div>
     </header>
-
     <main class="pt-24">
         <!-- ===== Título da Página ===== -->
         <section class="bg-[#002b3e] py-12">
@@ -190,6 +202,8 @@
         const servicesDropdown = document.getElementById('services-dropdown');
         const mobileBtn = document.getElementById('mobile-btn');
         const mobileMenu = document.getElementById('mobile-menu');
+        const mobileServicesToggle = document.getElementById('mobile-services-toggle');
+        const mobileServicesSubmenu = document.getElementById('mobile-services-submenu');
 
         // Dropdown de Serviços
         servicesBtn.addEventListener('click', (event) => {
@@ -208,17 +222,58 @@
         mobileBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
-        // Inicialização do Swiper
-        const swiper = new Swiper('.swiper', {
-            loop: true,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
+        
+        // Submenu (Acordeão) Mobile
+        mobileServicesToggle.addEventListener('click', () => {
+            mobileServicesSubmenu.classList.toggle('hidden');
+            mobileServicesToggle.classList.toggle('open');
+        });
+
+        // Lógica para o formulário de contato da página principal
+        const formIndex = document.getElementById('contact-form-index');
+        const resultMessageIndex = document.getElementById('result-message-index');
+
+        formIndex.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(formIndex);
+            const object = {};
+            formData.forEach((value, key) => {
+                object[key] = value;
+            });
+            const json = JSON.stringify(object);
+            resultMessageIndex.innerHTML = "Enviando...";
+            resultMessageIndex.className = "mt-6 text-lg text-gray-600";
+
+            fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: json
+                })
+                .then(async (response) => {
+                    let jsonResponse = await response.json();
+                    if (response.status == 200) {
+                        resultMessageIndex.innerHTML = "Mensagem enviada com sucesso!";
+                        resultMessageIndex.className = "mt-6 text-lg text-green-600";
+                    } else {
+                        console.log(response);
+                        resultMessageIndex.innerHTML = jsonResponse.message;
+                        resultMessageIndex.className = "mt-6 text-lg text-red-600";
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    resultMessageIndex.innerHTML = "Algo deu errado. Tente novamente.";
+                    resultMessageIndex.className = "mt-6 text-lg text-red-600";
+                })
+                .then(function() {
+                    formIndex.reset();
+                    setTimeout(() => {
+                        resultMessageIndex.innerHTML = "";
+                    }, 5000);
+                });
         });
     </script>
 </body>
